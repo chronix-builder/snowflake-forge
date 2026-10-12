@@ -61,16 +61,35 @@ else
     if [ "$PATCH_RC" -gt 1 ]; then
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
+    
+    # whitespace is stripped (same count, same order). Anything else stays fatal.
+    ws_only() {
+        awk '
+            /^--- / || /^\+\+\+ / || /^@@/ { next }
+            /^-/ { s = substr($0, 2); gsub(/[[:space:]]/, "", s); m[++nm] = s; next }
+            /^\+/ { s = substr($0, 2); gsub(/[[:space:]]/, "", s); p[++np] = s; next }
+            END {
+                if (nm == 0 || nm != np) exit 1
+                for (i = 1; i <= nm; i++) if (m[i] != p[i]) exit 1
+            }' "$1"
+    }
 
-    REJ_FILES=$(find . -path ./.zincore_deps -prune -o -name "*.rej" -print 2>/dev/null || true)
-    if [ -n "$REJ_FILES" ]; then
-        warn "SuSFS patch produced rejected hunks:"
-        warn "$REJ_FILES"
-        warn "Each .rej file above shows the exact hunk that failed to apply."
+    REAL_REJ=()
+    while IFS= read -r -d '' rej; do
+        if ws_only "$rej"; then
+            log "Whitespace-only reject ignored: $rej"
+            rm -f -- "$rej"
+        else
+            REAL_REJ+=("$rej")
+        fi
+    done < <(find . -path ./.zincore_deps -prune -o -name '*.rej' -print0 2>/dev/null)
+
+    if [ "${#REAL_REJ[@]}" -gt 0 ]; then
+        warn "SuSFS patch produced real rejected hunks:"
+        for r in "${REAL_REJ[@]}"; do warn "  $r"; done
         die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
-    else
-        log "SuSFS patch applied cleanly, no rejects"
     fi
+    log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
 # Manual hook script
