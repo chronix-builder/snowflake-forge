@@ -9,11 +9,11 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 
 # Compatibility
 
-**Device**
-- Redmi Note 10 Pro / Pro Max ([`sweet`](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php))
-
-**Supports**
-- Android 13 – 16
+| Supported devices | Supported Android versions |
+| :--- | :---: |
+| Xiaomi Redmi 7 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – Android 17 |
+| Xiaomi Redmi Note 10 Pro/Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – Android 17 |
+| Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – Android 17 |
 
 # Variants
 
