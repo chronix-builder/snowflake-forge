@@ -20,7 +20,7 @@ on:
 
 jobs:
   gate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       proceed: ${{ steps.check.outputs.proceed }}
     steps:
@@ -42,7 +42,7 @@ jobs:
   set-matrix:
     needs: gate
     if: needs.gate.outputs.proceed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
       do_release: ${{ steps.gen.outputs.do_release }}
@@ -87,7 +87,7 @@ jobs:
   build:
     needs: [gate, set-matrix]
     if: needs.gate.outputs.proceed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
@@ -237,7 +237,7 @@ jobs:
   release:
     needs: [gate, set-matrix, build]
     if: ${{ needs.gate.outputs.proceed == 'true' && needs.set-matrix.outputs.do_release == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
