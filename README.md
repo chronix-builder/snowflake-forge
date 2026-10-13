@@ -2,29 +2,27 @@
 
 Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
-# Disclaimer
+## Disclaimer
 
 ***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
 <p align="right">Your typical XDA Forum Disclaimer.</p>
 
-# Compatibility
+## Compatibility
 
 | Supported devices | Supported Android versions |
 | :--- | :---: |
-| Xiaomi Redmi 7 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – Android 17 |
+| Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – Android 17 |
 | Xiaomi Redmi Note 10 Pro/Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – Android 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – Android 17 |
 
-# Variants
+## Variants
 
-**ksu**
-- ReSukiSU — a KernelSU-based root solution for Android
-- SuSFS — an addon root-hiding solution for KernelSU
+| Build | What it includes |
+| :--- | :--- |
+| **`ksu`** | BakaSU and SuSFS |
+| **`nsu`** | No additions |
 
-**nsu**
-- Stock kernel — no additions
-
-# Installation
+## Installation
 
 **Flash**
 1. Download the zip for your variant (`nsu` or `ksu`) from [Releases](../../releases)
@@ -32,7 +30,7 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 3. Reboot to recovery
 4. Flash or sideload the zip
 5. Reboot to system
-6. Install [Baka-SU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed. (`ksu` only)
+6. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed. (`ksu` only)
 
 **Restore to stock**
 1. Reboot to bootloader
@@ -40,11 +38,11 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 3. Flash the stock dtbo image: `fastboot flash dtbo dtbo.img`
 4. Reboot: `fastboot reboot`
 
-# Release schedule
+## Release schedule
 
 New builds are published monthly. Emergency releases may follow sooner if the kernel source or build dependencies change significantly.
 
-# Credits
+## Credits
 
 - [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI.
 - [Hadad Darajat](https://codeberg.org/hadad) for kernel source.
