@@ -2,6 +2,11 @@
 
 Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — without dragging in extra modules or tweaks you never asked for.
 
+# Disclaimer
+
+***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
+<p align="right">Your typical XDA Forum Disclaimer.</p>
+
 # Compatibility
 
 **Device**
@@ -19,11 +24,6 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 **nsu**
 - Stock kernel — no additions
 
-# Disclaimer
-
-***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
-<p align="right">Your typical XDA Forum Disclaimer.</p>
-
 # Installation
 
 **Flash**
@@ -32,7 +32,7 @@ Built around one thing: adding ReSukiSU and SuSFS on top of a stock kernel — w
 3. Reboot to recovery
 4. Flash or sideload the zip
 5. Reboot to system
-6. Install [ReSukiSU Manager](https://github.com/ReSukiSU/ReSukiSU/releases) if needed. (`ksu` only)
+6. Install [Baka-SU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed. (`ksu` only)
 
 **Restore to stock**
 1. Reboot to bootloader
@@ -46,6 +46,8 @@ New builds are published monthly. Emergency releases may follow sooner if the ke
 
 # Credits
 
-- [aosp-xiaomi](https://github.com/aosp-xiaomi/android_kernel_xiaomi_sm6150) — kernel source
-- [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) — KernelSU for non-GKI
-- [JackA1ltman](https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd) — SuSFS patches
+- [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI.
+- [Hadad Darajat](https://codeberg.org/hadad) for kernel source.
+- [JackA1ltman](https://github.com/JackA1ltman) for SuSFS patches.
+- [LineageOS](https://github.com/LineageOS) for kernel source.
+- [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
