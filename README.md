@@ -25,12 +25,12 @@ Built around one thing: adding BakaSU and SuSFS on top of a stock kernel — wit
 ## Installation
 
 **Flash**
-1. Download the zip for your variant (`nsu` or `ksu`) from [Releases](../../releases)
+1. Download the zip for your variant (`nsu` or `ksu`) from [Releases](../../releases).
 2. Back up your current `boot` (and `dtbo`, if your device has one) partitions.
 3. Reboot to recovery.
 4. Flash or sideload the zip.
 5. Reboot to system.
-6. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed (`ksu` only)
+6. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed (`ksu` only).
 
 **Restore to stock**
 1. Reboot to bootloader.
@@ -40,7 +40,7 @@ Built around one thing: adding BakaSU and SuSFS on top of a stock kernel — wit
 
 ## Release schedule
 
-New builds are published monthly. Emergency releases may follow sooner if the kernel source or build dependencies change significantly.
+New builds are published on the 1st of every month. Emergency releases may follow sooner if the kernel source or build dependencies change significantly.
 
 ## Credits
 
