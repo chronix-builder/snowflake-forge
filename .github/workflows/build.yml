@@ -1,9 +1,9 @@
 name: Build Kernel
 
 on:
-  # Runs every Friday;
+  # Runs on the 1st of every month
   schedule:
-    - cron: "0 0 * * 5"
+    - cron: "17 3 1 * *"
 
   workflow_dispatch:
     inputs:
@@ -29,10 +29,10 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             DAY=$(date -u +%d)
             if [ "$((10#$DAY))" -le 7 ]; then
-              echo "→ Today (day $DAY) is the first Friday of the month — proceeding"
+              echo "→ Scheduled monthly run (day $DAY) — proceeding"
               echo "proceed=true" >> "$GITHUB_OUTPUT"
             else
-              echo "→ Cron fired (every Friday) but today (day $DAY) is not the first Friday — skipping this run"
+              echo "→ Unexpected schedule day ($DAY) — skipping this run"
               echo "proceed=false" >> "$GITHUB_OUTPUT"
             fi
           else
@@ -169,7 +169,6 @@ jobs:
           set -euo pipefail
           source config.env
           source scripts/env.sh "${{ matrix.device }}"
-          bash scripts/patches.sh "${{ matrix.device }}"
           bash scripts/goodies.sh "${{ matrix.device }}" "${{ matrix.variant }}"
           bash scripts/compile.sh "${{ matrix.device }}" "${{ matrix.variant }}"
 
@@ -279,7 +278,7 @@ jobs:
             [ -n "$MANAGERS_UNIQUE" ] && echo "> Supported Managers: $(echo "$MANAGERS_UNIQUE" | head -1)"
             echo ""
             echo "> [!CAUTION]"
-            echo "> - Always backup your boot and dtbo image before flashing!"
+            echo "> - Always back up your boot image (and dtbo, if your device has one) before flashing!"
           } > release_notes.md
           cat release_notes.md
 
