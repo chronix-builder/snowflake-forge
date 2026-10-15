@@ -39,7 +39,7 @@ FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
 
-log "Installing ReSukiSU (setup.sh arg: $KSU_SETUP_ARG)"
+log "Installing BakaSU (setup.sh arg: $KSU_SETUP_ARG)"
 bash "${KSU_SRC}/kernel/setup.sh" "$KSU_SETUP_ARG"
 
 log "Applying SuSFS patch for kernel $KERNEL_VERSION"
@@ -98,7 +98,7 @@ bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susf
 grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
 
 # Core config fragment (structural — merged into out/.config by compile.sh)
-log "Patching static symbol exports required by ReSukiSU"
+log "Patching static symbol exports required by BakaSU"
 
 UNSTATIC_APPLIED=0
 UNSTATIC_TOTAL=0
@@ -130,7 +130,7 @@ unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
-    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm ReSukiSU actually has the symbol access it needs before trusting this build."
+    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm BakaSU actually has the symbol access it needs before trusting this build."
 fi
 
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU"
