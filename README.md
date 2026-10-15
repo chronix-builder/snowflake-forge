@@ -16,7 +16,7 @@ It is made for people who want the stability of a stock kernel but still want ro
 | Supported devices | Supported Android versions |
 | :--- | :---: |
 | Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – 17 |
-| Xiaomi Redmi Note 10 Pro/Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
+| Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – 17 |
 
 ## Installation
