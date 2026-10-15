@@ -18,11 +18,11 @@ KERNEL_VERSION=$(read_field kernel_version)
 
 # Clone + pin dependencies BEFORE executing anything from them
 WORKDIR="$(pwd)"
-KSU_SRC="${WORKDIR}/.zincore_deps/resukisu"
+KSU_SRC="${WORKDIR}/.zincore_deps/bakasu"
 SUSFS_SRC="${WORKDIR}/.zincore_deps/susfs"
 mkdir -p "$(dirname "$KSU_SRC")"
 
-log "Cloning ReSukiSU (pinned to ${KSU_REPO_PIN})"
+log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
 git init --quiet "$KSU_SRC"
 git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
 git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
@@ -39,7 +39,7 @@ FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
 
-log "Installing ReSukiSU (setup.sh arg: $KSU_SETUP_ARG)"
+log "Installing BakaSU (setup.sh arg: $KSU_SETUP_ARG)"
 bash "${KSU_SRC}/kernel/setup.sh" "$KSU_SETUP_ARG"
 
 log "Applying SuSFS patch for kernel $KERNEL_VERSION"
@@ -61,16 +61,35 @@ else
     if [ "$PATCH_RC" -gt 1 ]; then
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
+    
+    # whitespace is stripped (same count, same order). Anything else stays fatal.
+    ws_only() {
+        awk '
+            /^--- / || /^\+\+\+ / || /^@@/ { next }
+            /^-/ { s = substr($0, 2); gsub(/[[:space:]]/, "", s); m[++nm] = s; next }
+            /^\+/ { s = substr($0, 2); gsub(/[[:space:]]/, "", s); p[++np] = s; next }
+            END {
+                if (nm == 0 || nm != np) exit 1
+                for (i = 1; i <= nm; i++) if (m[i] != p[i]) exit 1
+            }' "$1"
+    }
 
-    REJ_FILES=$(find . -path ./.zincore_deps -prune -o -name "*.rej" -print 2>/dev/null || true)
-    if [ -n "$REJ_FILES" ]; then
-        warn "SuSFS patch produced rejected hunks:"
-        warn "$REJ_FILES"
-        warn "Each .rej file above shows the exact hunk that failed to apply."
+    REAL_REJ=()
+    while IFS= read -r -d '' rej; do
+        if ws_only "$rej"; then
+            log "Whitespace-only reject ignored: $rej"
+            rm -f -- "$rej"
+        else
+            REAL_REJ+=("$rej")
+        fi
+    done < <(find . -path ./.zincore_deps -prune -o -name '*.rej' -print0 2>/dev/null)
+
+    if [ "${#REAL_REJ[@]}" -gt 0 ]; then
+        warn "SuSFS patch produced real rejected hunks:"
+        for r in "${REAL_REJ[@]}"; do warn "  $r"; done
         die "These must be resolved manually against this kernel tree before a KSU build can be trusted."
-    else
-        log "SuSFS patch applied cleanly, no rejects"
     fi
+    log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
 # Manual hook script
@@ -79,7 +98,7 @@ bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susf
 grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
 
 # Core config fragment (structural — merged into out/.config by compile.sh)
-log "Patching static symbol exports required by ReSukiSU"
+log "Patching static symbol exports required by BakaSU"
 
 UNSTATIC_APPLIED=0
 UNSTATIC_TOTAL=0
@@ -111,7 +130,7 @@ unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
-    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm ReSukiSU actually has the symbol access it needs before trusting this build."
+    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm BakaSU actually has the symbol access it needs before trusting this build."
 fi
 
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU"
