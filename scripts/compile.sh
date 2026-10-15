@@ -38,7 +38,7 @@ export LOCALVERSION=
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_AUTO
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_SHA
 
-# Merge all fragments written by patches.sh / goodies.sh into out/.config
+# Merge config fragments written by goodies.sh into out/.config
 FRAGMENT_DIR="zincore_fragments"
 if [ -d "$FRAGMENT_DIR" ]; then
     for FRAGMENT in "$FRAGMENT_DIR"/*.config; do
