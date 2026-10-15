@@ -249,21 +249,21 @@ jobs:
             # (config.env) — so their version strings SHOULD be identical
             # across every device. We verify that instead of assuming it:
             # if they ever diverge, something is wrong and needs looking at.
-            RESUKISU_UNIQUE=$(cat final/*-bakasu-version.txt 2>/dev/null | sort -u)
+            BAKASU_UNIQUE=$(cat final/*-bakasu-version.txt 2>/dev/null | sort -u)
             SUSFS_UNIQUE=$(cat final/*-susfs-version.txt 2>/dev/null | sort -u)
             MANAGERS_UNIQUE=$(cat final/*-bakasu-managers.txt 2>/dev/null | sort -u)
 
-            RESUKISU_LINES=$(echo "$RESUKISU_UNIQUE" | grep -c . || true)
+            BAKASU_LINES=$(echo "$BAKASU_UNIQUE" | grep -c . || true)
             SUSFS_LINES=$(echo "$SUSFS_UNIQUE" | grep -c . || true)
 
-            if [ "$RESUKISU_LINES" -gt 1 ]; then
-              echo "::warning::BakaSU version differs across devices despite a single global pin — investigate: $(echo "$RESUKISU_UNIQUE" | tr '\n' ' ')"
+            if [ "$BAKASU_LINES" -gt 1 ]; then
+              echo "::warning::BakaSU version differs across devices despite a single global pin — investigate: $(echo "$BAKASU_UNIQUE" | tr '\n' ' ')"
             fi
             if [ "$SUSFS_LINES" -gt 1 ]; then
               echo "::warning::SuSFS version differs across devices despite a single global pin — investigate: $(echo "$SUSFS_UNIQUE" | tr '\n' ' ')"
             fi
 
-            [ -n "$RESUKISU_UNIQUE" ] && echo "> BakaSU Version: $(echo "$RESUKISU_UNIQUE" | head -1)"
+            [ -n "$BAKASU_UNIQUE" ] && echo "> BakaSU Version: $(echo "$BAKASU_UNIQUE" | head -1)"
             [ -n "$SUSFS_UNIQUE" ] && echo "> SuSFS Version: $(echo "$SUSFS_UNIQUE" | head -1)"
             [ -n "$MANAGERS_UNIQUE" ] && echo "> Supported Managers: $(echo "$MANAGERS_UNIQUE" | head -1)"
             echo ""
