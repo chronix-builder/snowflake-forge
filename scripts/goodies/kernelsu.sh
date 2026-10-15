@@ -18,11 +18,11 @@ KERNEL_VERSION=$(read_field kernel_version)
 
 # Clone + pin dependencies BEFORE executing anything from them
 WORKDIR="$(pwd)"
-KSU_SRC="${WORKDIR}/.zincore_deps/resukisu"
+KSU_SRC="${WORKDIR}/.zincore_deps/bakasu"
 SUSFS_SRC="${WORKDIR}/.zincore_deps/susfs"
 mkdir -p "$(dirname "$KSU_SRC")"
 
-log "Cloning ReSukiSU (pinned to ${KSU_REPO_PIN})"
+log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
 git init --quiet "$KSU_SRC"
 git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
 git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
