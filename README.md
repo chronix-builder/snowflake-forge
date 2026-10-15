@@ -19,13 +19,6 @@ It is made for people who want the stability of a stock kernel but still want ro
 | Xiaomi Redmi Note 10 Pro/Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – 17 |
 
-## Variants
-
-| Build | What it includes |
-| :--- | :--- |
-| **`ksu`** | BakaSU and SuSFS |
-| **`nsu`** | No additions |
-
 ## Installation
 
 ### Flash
