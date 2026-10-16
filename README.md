@@ -45,7 +45,11 @@ New builds are published on the 1st of every month. Emergency releases may follo
 - [Hadad](https://codeberg.org/hadad) for kernel source.
 - [JackA1ltman](https://github.com/JackA1ltman) for SuSFS patches.
 - [LineageOS](https://github.com/LineageOS) for kernel source.
+- [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
 - [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
+- [riarumoda](https://github.com/riarumoda/perf_neon-builder) which inspired this project.
+- [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
+- [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
 
 ## License
 
