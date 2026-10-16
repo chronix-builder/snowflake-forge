@@ -47,7 +47,7 @@ New builds are published on the 1st of every month. Emergency releases may follo
 - [LineageOS](https://github.com/LineageOS) for kernel source.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
 - [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
-- [riarumoda](https://github.com/riarumoda/perf_neon-builder) which inspired this project.
+- [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
 - [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
 
