@@ -2,14 +2,13 @@
 
 GitHub Actions builder for non-GKI kernels. It builds the kernel your device already runs: the source maintained by teams like LineageOS and PixelOS, compiled with a pinned AOSP Clang toolchain, with every kernel option left to the device's own defconfig. Nothing is rewritten, so the kernel stays as stable and predictable as its maintainers made it.
 
-## What is it for?
+## Approach
 
-It is made for people who want the stability of a stock kernel but still want root when they need it. The `ksu` build adds BakaSU and SuSFS on top and nothing else, while the `nsu` build is the vanilla kernel.
+Built for those who want the stability of a stock kernel but still want root when they need it. The `ksu` build adds BakaSU and SuSFS on top, and nothing else, while the `nsu` build is the vanilla kernel.
 
 ## Disclaimer
 
-***Your warranty is now void. I am not responsible for bricked devices, dead SD cards, or you getting fired because an alarm failed to work. Please do some research if you have any concerns about features included before flashing it! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
-<p align="right">Your typical XDA Forum Disclaimer.</p>
+***Your warranty is now void. I am not responsible for bricked devices or dead SD cards. Please do some research if you have any concerns about the features this builder includes in its kernels before flashing them! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
 
 ## Compatibility
 
@@ -37,13 +36,13 @@ It is made for people who want the stability of a stock kernel but still want ro
 
 ## Release schedule
 
-New builds are published on the 1st of every month. Emergency releases may follow sooner if the kernel source or build dependencies change significantly.
+New builds are released on the **1st of every month**. Each release rebuilds every supported device and variant from the latest kernel source. An emergency release may follow between cycles if the kernel source or build dependencies change significantly.
 
 ## Credits
 
-- [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI.
+- [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI kernels.
 - [Hadad](https://codeberg.org/hadad) for kernel source.
-- [JackA1ltman](https://github.com/JackA1ltman) for SuSFS patches.
+- [JackA1ltman](https://github.com/JackA1ltman) for KernelSU hook script and SuSFS patches.
 - [LineageOS](https://github.com/LineageOS) for kernel source.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
 - [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
