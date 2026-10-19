@@ -19,29 +19,7 @@ on:
         default: false
 
 jobs:
-  gate:
-    runs-on: ubuntu-24.04
-    outputs:
-      proceed: ${{ steps.check.outputs.proceed }}
-    steps:
-      - id: check
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            DAY=$(date -u +%d)
-            if [ "$((10#$DAY))" -le 7 ]; then
-              echo "→ Scheduled monthly run (day $DAY) — proceeding"
-              echo "proceed=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "→ Unexpected schedule day ($DAY) — skipping this run"
-              echo "proceed=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          fi
-
   set-matrix:
-    needs: gate
-    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
@@ -85,8 +63,7 @@ jobs:
           fi
 
   build:
-    needs: [gate, set-matrix]
-    if: needs.gate.outputs.proceed == 'true'
+    needs: set-matrix
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -224,8 +201,8 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: [gate, set-matrix, build]
-    if: ${{ needs.gate.outputs.proceed == 'true' && needs.set-matrix.outputs.do_release == 'true' }}
+    needs: [set-matrix, build]
+    if: ${{ needs.set-matrix.outputs.do_release == 'true' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
