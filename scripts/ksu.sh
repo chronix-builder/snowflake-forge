@@ -9,7 +9,6 @@ DEVICE_JSON="devices/${DEVICE}.json"
 
 : "${KSU_REPO_URL:?KSU_REPO_URL not set — source config.env first}"
 : "${KSU_REPO_PIN:?KSU_REPO_PIN not set — source config.env first}"
-: "${KSU_SETUP_ARG:?KSU_SETUP_ARG not set — source config.env first}"
 : "${SUSFS_REPO_URL:?SUSFS_REPO_URL not set — source config.env first}"
 : "${SUSFS_REPO_PIN:?SUSFS_REPO_PIN not set — source config.env first}"
 
@@ -39,8 +38,11 @@ FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
 
-log "Installing BakaSU (setup.sh arg: $KSU_SETUP_ARG)"
-bash "${KSU_SRC}/kernel/setup.sh" "$KSU_SETUP_ARG"
+log "Installing BakaSU (pinned to ${KSU_REPO_PIN})"
+bash "${KSU_SRC}/kernel/setup.sh" "$KSU_REPO_PIN"
+
+# setup.sh silently falls back to the default branch if checkout fails; make sure the pin was really used
+[ "$(git -C KernelSU rev-parse HEAD)" = "$KSU_REPO_PIN" ] || die "BakaSU is not at the pinned commit ${KSU_REPO_PIN}, setup.sh checkout probably failed"
 
 log "Applying SuSFS patch for kernel $KERNEL_VERSION"
 
