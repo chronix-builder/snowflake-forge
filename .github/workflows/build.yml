@@ -234,10 +234,10 @@ jobs:
             SUSFS_LINES=$(echo "$SUSFS_UNIQUE" | grep -c . || true)
 
             if [ "$BAKASU_LINES" -gt 1 ]; then
-              echo "::warning::BakaSU version differs across devices despite a single global pin — investigate: $(echo "$BAKASU_UNIQUE" | tr '\n' ' ')"
+              echo "::warning::BakaSU version differs across devices despite a single global pin — investigate: $(echo "$BAKASU_UNIQUE" | tr '\n' ' ')" >&2
             fi
             if [ "$SUSFS_LINES" -gt 1 ]; then
-              echo "::warning::SuSFS version differs across devices despite a single global pin — investigate: $(echo "$SUSFS_UNIQUE" | tr '\n' ' ')"
+              echo "::warning::SuSFS version differs across devices despite a single global pin — investigate: $(echo "$SUSFS_UNIQUE" | tr '\n' ' ')" >&2
             fi
 
             [ -n "$BAKASU_UNIQUE" ] && echo "> BakaSU Version: $(echo "$BAKASU_UNIQUE" | head -1)"
