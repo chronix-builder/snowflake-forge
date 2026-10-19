@@ -136,7 +136,7 @@ jobs:
           set -euo pipefail
           source config.env
           source scripts/env.sh "${{ matrix.device }}"
-          bash scripts/goodies.sh "${{ matrix.device }}" "${{ matrix.variant }}"
+          bash scripts/variant.sh "${{ matrix.device }}" "${{ matrix.variant }}"
           bash scripts/compile.sh "${{ matrix.device }}" "${{ matrix.variant }}"
 
       - name: Package patch rejects (on failure)
