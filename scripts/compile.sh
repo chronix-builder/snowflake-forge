@@ -56,6 +56,9 @@ fi
 # Resolve dependencies after all fragment toggles
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS olddefconfig
 
+# Save final .config as a debug artifact
+cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
+
 # ccache
 if command -v ccache >/dev/null 2>&1; then
     export CCACHE_DIR="${CCACHE_DIR:-${HOME}/.ccache}"
@@ -91,9 +94,6 @@ if [ "$VARIANT" = "ksu" ]; then
     [ -s "${WORKDIR}/${DEVICE}-bakasu-version.txt" ] || die "KSU build finished but no BakaSU version string was found in $BUILD_LOG, the version grep may be out of date"
     [ -s "${WORKDIR}/${DEVICE}-bakasu-managers.txt" ] || die "KSU build finished but no supported manager list was found in $BUILD_LOG, the grep may be out of date"
 fi
-
-# Save final .config as a debug artifact
-cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
 
 cp "$IMAGE_PATH" "$AK3_DIR/"
 
