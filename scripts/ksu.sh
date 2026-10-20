@@ -64,7 +64,7 @@ else
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
     
-    # whitespace is stripped (same count, same order). Anything else stays fatal.
+    # A reject is ignored only if it is whitespace-only
     ws_only() {
         awk '
             /^--- / || /^\+\+\+ / || /^@@/ { next }
