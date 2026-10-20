@@ -23,6 +23,11 @@ KERNEL_NAME=$(read_field kernel_name)
 
 log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 
+# AnyKernel3
+AK3_DIR="${WORKDIR}/AnyKernel3"
+rm -rf "$AK3_DIR"
+git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
+
 # Base defconfig
 mkdir -p "$OUT_DIR"
 LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip ld-name=lld"
@@ -89,11 +94,6 @@ fi
 
 # Save final .config as a debug artifact
 cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
-
-# Package with AnyKernel3
-AK3_DIR="${WORKDIR}/AnyKernel3"
-rm -rf "$AK3_DIR"
-git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
 
 cp "$IMAGE_PATH" "$AK3_DIR/"
 
