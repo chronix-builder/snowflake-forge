@@ -9,7 +9,7 @@
 
 </div>
 
-GitHub Actions builder for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with a pinned AOSP Clang toolchain, staying close to the maintainers’ own configuration so the kernel stays as stable and predictable as its maintainers made it.
+GitHub Actions builder for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with a pinned AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
 
 ## Approach
 
