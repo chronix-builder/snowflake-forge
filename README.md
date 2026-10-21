@@ -2,13 +2,18 @@
 
 GitHub Actions builder for non-GKI kernels. It builds the kernel your device already runs: the source maintained by teams like LineageOS and PixelOS, compiled with a pinned AOSP Clang toolchain, with every kernel option left to the device's own defconfig. Nothing is rewritten, so the kernel stays as stable and predictable as its maintainers made it.
 
+<div align="center">
+
+[![Releases](https://img.shields.io/badge/Download-Releases-2ea44f?style=flat-square)](https://github.com/yureixen/zincore-forge/releases)
+[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?style=flat-square)](https://github.com/yureixen/zincore-forge/releases)
+[![License](https://img.shields.io/github/license/yureixen/zincore-forge?style=flat-square)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-Channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/deadenddrops)
+
+</div>
+
 ## Approach
 
 Built for those who want the stability of a stock kernel but still want root when they need it. The `ksu` build adds BakaSU and SuSFS on top, and nothing else, while the `nsu` build is the vanilla kernel.
-
-## Disclaimer
-
-***Your warranty is now void. I am not responsible for bricked devices or dead SD cards. Please do some research if you have any concerns about the features this builder includes in its kernels before flashing them! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.***
 
 ## Compatibility
 
@@ -17,6 +22,11 @@ Built for those who want the stability of a stock kernel but still want root whe
 | Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – 17 |
 | Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – 17 |
+
+## Disclaimer
+
+> [!CAUTION]
+> Your warranty is now void. I am not responsible for bricked devices or dead SD cards. Please do some research if you have any concerns about the features this builder includes in its kernels before flashing them! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.
 
 ## Installation
 
@@ -49,7 +59,3 @@ New builds are released on the **1st of every month**. Each release rebuilds eve
 - [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
 - [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
-
-## License
-
-Released under the [GNU General Public License v2.0](LICENSE).
