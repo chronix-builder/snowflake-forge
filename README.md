@@ -2,10 +2,10 @@
 
 # Zincore Forge
 
-[![Releases](https://img.shields.io/badge/Download-Releases-6e56cf?style=flat&labelColor=1f2328)](https://github.com/yureixen/zincore-forge/releases)
-[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?style=flat&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
-[![License](https://img.shields.io/github/license/yureixen/zincore-forge?style=flat&labelColor=1f2328&color=6e56cf)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-Channel-6e56cf?style=flat&labelColor=1f2328)](https://t.me/deadenddrops)
+[![Release](https://img.shields.io/github/release-date/yureixen/zincore-forge?label=Release&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
+[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?label=Downloads&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
+[![License](https://img.shields.io/github/license/yureixen/zincore-forge?label=License&labelColor=1f2328&color=6e56cf)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-Channel-6e56cf?labelColor=1f2328)](https://t.me/deadenddrops)
 
 </div>
 
