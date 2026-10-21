@@ -260,6 +260,6 @@ jobs:
           DATE=$(date +'%Y-%m-%d')
           gh release create "zincore-${DATE}-${{ github.run_id }}" \
             --repo "${{ github.repository }}" \
-            --title "zincore-forge build - ${DATE}" \
+            --title "build - ${DATE}" \
             --notes-file release_notes.md \
             final/*.zip
