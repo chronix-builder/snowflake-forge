@@ -1,8 +1,6 @@
-# Zincore Forge
-
-GitHub Actions builder for non-GKI kernels. It builds the kernel your device already runs: the source maintained by teams like LineageOS and PixelOS, compiled with a pinned AOSP Clang toolchain, with every kernel option left to the device's own defconfig. Nothing is rewritten, so the kernel stays as stable and predictable as its maintainers made it.
-
 <div align="center">
+
+# Zincore Forge
 
 [![Releases](https://img.shields.io/badge/Download-Releases-6e56cf?style=flat&labelColor=1f2328)](https://github.com/yureixen/zincore-forge/releases)
 [![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?style=flat&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
@@ -11,17 +9,19 @@ GitHub Actions builder for non-GKI kernels. It builds the kernel your device alr
 
 </div>
 
+GitHub Actions builder for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with a pinned AOSP Clang toolchain, staying close to the maintainers’ own configuration so the kernel stays as stable and predictable as its maintainers made it.
+
 ## Approach
 
 Built for those who want the stability of a stock kernel but still want root when they need it. The `ksu` build adds BakaSU and SuSFS on top, and nothing else, while the `nsu` build is the vanilla kernel.
 
 ## Compatibility
 
-| Supported devices | Supported Android versions |
-| :--- | :---: |
-| Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | Android 13 – 17 |
-| Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
-| Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – 17 |
+| Supported devices | Kernel version | Supported Android versions |
+| :--- | :---: | :---: |
+| Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | 4.9 | Android 13 – 17 |
+| Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | 4.14 | Android 13 – 17 |
+| Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | 4.14 | Android 13 – 17 |
 
 ## Installation
 
