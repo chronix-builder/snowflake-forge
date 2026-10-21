@@ -4,10 +4,10 @@ GitHub Actions builder for non-GKI kernels. It builds the kernel your device alr
 
 <div align="center">
 
-[![Releases](https://img.shields.io/badge/Download-Releases-2ea44f?style=flat-square)](https://github.com/yureixen/zincore-forge/releases)
-[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?style=flat-square)](https://github.com/yureixen/zincore-forge/releases)
-[![License](https://img.shields.io/github/license/yureixen/zincore-forge?style=flat-square)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-Channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/deadenddrops)
+[![Releases](https://img.shields.io/badge/Download-Releases-6e56cf?style=flat&labelColor=1f2328)](https://github.com/yureixen/zincore-forge/releases)
+[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?style=flat&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
+[![License](https://img.shields.io/github/license/yureixen/zincore-forge?style=flat&labelColor=1f2328&color=6e56cf)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-Channel-6e56cf?style=flat&labelColor=1f2328)](https://t.me/deadenddrops)
 
 </div>
 
@@ -23,20 +23,20 @@ Built for those who want the stability of a stock kernel but still want root whe
 | Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | Android 13 – 17 |
 
-## Disclaimer
+## Installation
 
 > [!CAUTION]
 > Your warranty is now void. I am not responsible for bricked devices or dead SD cards. Please do some research if you have any concerns about the features this builder includes in its kernels before flashing them! YOU are choosing to make these modifications, and if you point the finger at me for messing up your device, I will laugh at you.
 
-## Installation
+> [!IMPORTANT]
+> Back up your current `boot` (and `dtbo`, if your device has one) partitions.
 
 ### Flash
 1. Download the zip for your variant (`nsu` or `ksu`) from [Releases](../../releases).
-2. Back up your current `boot` (and `dtbo`, if your device has one) partitions.
-3. Reboot to recovery.
-4. Flash or sideload the zip.
-5. Reboot to system.
-6. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed (`ksu` only).
+2. Reboot to recovery.
+3. Flash or sideload the zip.
+4. Reboot to system.
+5. Install [BakaSU Manager](https://github.com/Baka-SU/BakaSU/releases) if needed (`ksu` only).
 
 ### Restore to stock
 1. Reboot to bootloader.
