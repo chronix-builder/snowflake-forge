@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   set-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
       do_release: ${{ steps.gen.outputs.do_release }}
@@ -68,7 +68,7 @@ jobs:
 
   build:
     needs: set-matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload patch rejects
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: zincore-${{ matrix.device }}-${{ matrix.variant }}-rejects
           path: patch-rejects.tar.gz
@@ -177,7 +177,7 @@ jobs:
           fi
 
       - name: Upload flashable zip
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: zincore-${{ matrix.device }}-${{ matrix.variant }}
           path: kernel_src/zincore-*.zip
@@ -185,7 +185,7 @@ jobs:
 
       - name: Upload debug artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: debug-${{ matrix.device }}-${{ matrix.variant }}
           path: |
@@ -207,7 +207,7 @@ jobs:
   release:
     needs: [set-matrix, build]
     if: ${{ needs.set-matrix.outputs.do_release == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
