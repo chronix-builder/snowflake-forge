@@ -130,6 +130,8 @@ unstatic "security/selinux/ss/services.c" "struct page \*selinux_status_page;"
 unstatic "security/selinux/ss/services.c" "DEFINE_MUTEX(selinux_status_lock);"
 unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
 unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
+unstatic "security/selinux/ss/services.c" "void security_dump_masked_av("
+unstatic "security/selinux/ss/services.c" "void context_struct_compute_av("
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
