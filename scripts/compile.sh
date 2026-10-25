@@ -88,7 +88,7 @@ log "Kernel image: $IMAGE_PATH"
 
 if [ "$VARIANT" = "ksu" ]; then
     grep -oE "(BakaSU|ReSukiSU) version name: [^ ]+" "$BUILD_LOG" | head -1 | sed -E 's/^[A-Za-z]+ version name: //' > "${WORKDIR}/${DEVICE}-bakasu-version.txt" || true
-    grep -o "Supported Unofficial Manager:.*" "$BUILD_LOG" | head -1 | sed -E 's/Supported Unofficial Manager: //' > "${WORKDIR}/${DEVICE}-bakasu-managers.txt" || true
+    grep -oE "Supported (Unofficial )?Managers?: .*" "$BUILD_LOG" | head -1 | sed -E 's/^Supported (Unofficial )?Managers?: //; s/ +$//' > "${WORKDIR}/${DEVICE}-bakasu-managers.txt" || true
     [ -s "${WORKDIR}/${DEVICE}-bakasu-version.txt" ] || die "KSU build finished but no BakaSU version string was found in $BUILD_LOG, the version grep may be out of date"
     [ -s "${WORKDIR}/${DEVICE}-bakasu-managers.txt" ] || die "KSU build finished but no supported manager list was found in $BUILD_LOG, the grep may be out of date"
 fi
