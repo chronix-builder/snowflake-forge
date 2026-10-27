@@ -4,17 +4,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-DEVICE="${1:?Usage: goodies.sh <device> <variant>}"
-VARIANT="${2:?Usage: goodies.sh <device> <variant>}"
-GOODIES_DIR="${SCRIPT_DIR}/goodies"
+DEVICE="${1:?Usage: variant.sh <device> <variant>}"
+VARIANT="${2:?Usage: variant.sh <device> <variant>}"
 
 case "$VARIANT" in
-    nsu) log "NSU (stock) variant — no goodies to apply" ;;
+    nsu) log "NSU (stock) variant — nothing to add" ;;
     ksu)
         log "KSU variant — applying BakaSU + SuSFS"
-        bash "${GOODIES_DIR}/kernelsu.sh" "$DEVICE"
+        bash "${SCRIPT_DIR}/ksu.sh" "$DEVICE"
         ;;
     *) die "Unknown variant '$VARIANT' — expected nsu or ksu" ;;
 esac
 
-log "goodies.sh done for variant: $VARIANT"
+log "variant.sh done for variant: $VARIANT"

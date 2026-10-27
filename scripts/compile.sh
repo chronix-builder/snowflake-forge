@@ -23,11 +23,14 @@ KERNEL_NAME=$(read_field kernel_name)
 
 log "Building $DEVICE ($VARIANT) — defconfig: $DEFCONFIG"
 
+# AnyKernel3
+AK3_DIR="${WORKDIR}/AnyKernel3"
+rm -rf "$AK3_DIR"
+git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
+
 # Base defconfig
 mkdir -p "$OUT_DIR"
-LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip ld-name=lld"
-EXTRA_MAKE_ARGS=$(read_field extra_make_args)
-LLVM_TOOLS="$LLVM_TOOLS EXTRAVERSION= $EXTRA_MAKE_ARGS"
+LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip ld-name=lld EXTRAVERSION="
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS $DEFCONFIG
 
 # Full kernel name control from builder
@@ -38,7 +41,7 @@ export LOCALVERSION=
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_AUTO
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_SHA
 
-# Merge config fragments written by goodies.sh into out/.config
+# Merge config fragments written by variant.sh into out/.config
 FRAGMENT_DIR="zincore_fragments"
 if [ -d "$FRAGMENT_DIR" ]; then
     for FRAGMENT in "$FRAGMENT_DIR"/*.config; do
@@ -50,6 +53,9 @@ fi
 
 # Resolve dependencies after all fragment toggles
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS olddefconfig
+
+# Save final .config as a debug artifact
+cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
 
 # ccache
 if command -v ccache >/dev/null 2>&1; then
@@ -82,16 +88,10 @@ log "Kernel image: $IMAGE_PATH"
 
 if [ "$VARIANT" = "ksu" ]; then
     grep -oE "(BakaSU|ReSukiSU) version name: [^ ]+" "$BUILD_LOG" | head -1 | sed -E 's/^[A-Za-z]+ version name: //' > "${WORKDIR}/${DEVICE}-bakasu-version.txt" || true
-    grep -o "Supported Unofficial Manager:.*" "$BUILD_LOG" | head -1 | sed -E 's/Supported Unofficial Manager: //' > "${WORKDIR}/${DEVICE}-bakasu-managers.txt" || true
+    grep -oE "Supported (Unofficial )?Managers?: .*" "$BUILD_LOG" | head -1 | sed -E 's/^Supported (Unofficial )?Managers?: //; s/ +$//' > "${WORKDIR}/${DEVICE}-bakasu-managers.txt" || true
+    [ -s "${WORKDIR}/${DEVICE}-bakasu-version.txt" ] || die "KSU build finished but no BakaSU version string was found in $BUILD_LOG, the version grep may be out of date"
+    [ -s "${WORKDIR}/${DEVICE}-bakasu-managers.txt" ] || die "KSU build finished but no supported manager list was found in $BUILD_LOG, the grep may be out of date"
 fi
-
-# Save final .config as a debug artifact
-cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
-
-# Package with AnyKernel3
-AK3_DIR="${WORKDIR}/AnyKernel3"
-rm -rf "$AK3_DIR"
-git clone --depth 1 -b "$AK3_BRANCH" "$AK3_REPO" "$AK3_DIR"
 
 cp "$IMAGE_PATH" "$AK3_DIR/"
 

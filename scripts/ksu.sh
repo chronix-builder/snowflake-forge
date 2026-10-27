@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-DEVICE="${1:?Usage: kernelsu.sh <device>}"
+DEVICE="${1:?Usage: ksu.sh <device>}"
 DEVICE_JSON="devices/${DEVICE}.json"
 
 : "${KSU_REPO_URL:?KSU_REPO_URL not set — source config.env first}"
 : "${KSU_REPO_PIN:?KSU_REPO_PIN not set — source config.env first}"
-: "${KSU_SETUP_ARG:?KSU_SETUP_ARG not set — source config.env first}"
 : "${SUSFS_REPO_URL:?SUSFS_REPO_URL not set — source config.env first}"
 : "${SUSFS_REPO_PIN:?SUSFS_REPO_PIN not set — source config.env first}"
 
@@ -39,8 +38,11 @@ FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
 
-log "Installing BakaSU (setup.sh arg: $KSU_SETUP_ARG)"
-bash "${KSU_SRC}/kernel/setup.sh" "$KSU_SETUP_ARG"
+log "Installing BakaSU (pinned to ${KSU_REPO_PIN})"
+bash "${KSU_SRC}/kernel/setup.sh" "$KSU_REPO_PIN"
+
+# setup.sh silently falls back to the default branch if checkout fails; make sure the pin was really used
+[ "$(git -C KernelSU rev-parse HEAD)" = "$KSU_REPO_PIN" ] || die "BakaSU is not at the pinned commit ${KSU_REPO_PIN}, setup.sh checkout probably failed"
 
 log "Applying SuSFS patch for kernel $KERNEL_VERSION"
 
@@ -62,7 +64,7 @@ else
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
     
-    # whitespace is stripped (same count, same order). Anything else stays fatal.
+    # A reject is ignored only if it is whitespace-only
     ws_only() {
         awk '
             /^--- / || /^\+\+\+ / || /^@@/ { next }
@@ -96,6 +98,7 @@ fi
 log "Applying SuSFS manual hook patches"
 bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susfs_hook.log
 grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
+[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in /tmp/zincore_susfs_hook.log, the version grep may be out of date"
 
 # Core config fragment (structural — merged into out/.config by compile.sh)
 log "Patching static symbol exports required by BakaSU"
@@ -127,6 +130,8 @@ unstatic "security/selinux/ss/services.c" "struct page \*selinux_status_page;"
 unstatic "security/selinux/ss/services.c" "DEFINE_MUTEX(selinux_status_lock);"
 unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
 unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
+unstatic "security/selinux/ss/services.c" "void security_dump_masked_av("
+unstatic "security/selinux/ss/services.c" "void context_struct_compute_av("
 
 log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
 if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
