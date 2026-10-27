@@ -17,8 +17,8 @@ KERNEL_VERSION=$(read_field kernel_version)
 
 # Clone + pin dependencies BEFORE executing anything from them
 WORKDIR="$(pwd)"
-KSU_SRC="${WORKDIR}/.zincore_deps/bakasu"
-SUSFS_SRC="${WORKDIR}/.zincore_deps/susfs"
+KSU_SRC="${WORKDIR}/.snowflake_deps/bakasu"
+SUSFS_SRC="${WORKDIR}/.snowflake_deps/susfs"
 mkdir -p "$(dirname "$KSU_SRC")"
 
 log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
@@ -33,7 +33,7 @@ git -C "$SUSFS_SRC" remote add origin "$SUSFS_REPO_URL"
 git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN"
 git -C "$SUSFS_SRC" checkout --quiet FETCH_HEAD
 
-FRAGMENT_DIR="zincore_fragments"
+FRAGMENT_DIR="snowflake_fragments"
 FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
@@ -84,7 +84,7 @@ else
         else
             REAL_REJ+=("$rej")
         fi
-    done < <(find . -path ./.zincore_deps -prune -o -name '*.rej' -print0 2>/dev/null)
+    done < <(find . -path ./.snowflake_deps -prune -o -name '*.rej' -print0 2>/dev/null)
 
     if [ "${#REAL_REJ[@]}" -gt 0 ]; then
         warn "SuSFS patch produced real rejected hunks:"
@@ -96,9 +96,10 @@ fi
 
 # Manual hook script
 log "Applying SuSFS manual hook patches"
-bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee /tmp/zincore_susfs_hook.log
-grep -o "Current susfs patch version:[0-9.]*" /tmp/zincore_susfs_hook.log | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
-[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in /tmp/zincore_susfs_hook.log, the version grep may be out of date"
+HOOK_LOG="${WORKDIR}/${DEVICE}-susfs-hook.log"
+bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee "$HOOK_LOG"
+grep -o "Current susfs patch version:[0-9.]*" "$HOOK_LOG" | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
+[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in $HOOK_LOG, the version grep may be out of date"
 
 # Core config fragment (structural — merged into out/.config by compile.sh)
 log "Patching static symbol exports required by BakaSU"

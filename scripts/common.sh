@@ -14,9 +14,10 @@ log()  { echo "→ $*"; }
 warn() { echo "⚠ $*" >&2; }
 die()  { echo "✗ $*" >&2; exit 1; }
 
-# device JSON field reader
+# device JSON field reader — prints the value, or nothing when the field is absent
 read_field() {
     local field="$1"
+    local value
 
     : "${DEVICE:?read_field: DEVICE is not set}"
     : "${DEVICE_JSON:?read_field: DEVICE_JSON is not set}"
@@ -25,18 +26,16 @@ read_field() {
         die "read_field: device config not found at $DEVICE_JSON"
     fi
 
-    python3 -c "
-import json, sys
-try:
-    d = json.load(open('$DEVICE_JSON'))['$DEVICE']
-except FileNotFoundError:
-    sys.exit('read_field: $DEVICE_JSON not found')
-except KeyError:
-    sys.exit(\"read_field: device '$DEVICE' not found in $DEVICE_JSON\")
-except json.JSONDecodeError as e:
-    sys.exit(f'read_field: invalid JSON in $DEVICE_JSON: {e}')
-print(d.get('$field', ''))
-"
+    if ! value=$(jq -r --arg d "$DEVICE" --arg f "$field" \
+        '.[$d][$f] // empty' "$DEVICE_JSON" 2>/dev/null); then
+        die "read_field: invalid JSON in $DEVICE_JSON"
+    fi
+
+    if ! jq -e --arg d "$DEVICE" '.[$d]' "$DEVICE_JSON" >/dev/null 2>&1; then
+        die "read_field: device '$DEVICE' not found in $DEVICE_JSON"
+    fi
+
+    printf '%s\n' "$value"
 }
 
 # config fragment writer

@@ -34,7 +34,7 @@ LLVM_TOOLS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-ob
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS $DEFCONFIG
 
 # Full kernel name control from builder
-./scripts/config --file "${OUT_DIR}/.config" --set-str CONFIG_LOCALVERSION "-${KERNEL_NAME}-${VARIANT}-zincore"
+./scripts/config --file "${OUT_DIR}/.config" --set-str CONFIG_LOCALVERSION "-${KERNEL_NAME}-${VARIANT}"
 
 # Generic insurance: disable git-dirty auto-suffix
 export LOCALVERSION=
@@ -42,7 +42,7 @@ export LOCALVERSION=
 ./scripts/config --file "${OUT_DIR}/.config" --disable CONFIG_LOCALVERSION_SHA
 
 # Merge config fragments written by variant.sh into out/.config
-FRAGMENT_DIR="zincore_fragments"
+FRAGMENT_DIR="snowflake_fragments"
 if [ -d "$FRAGMENT_DIR" ]; then
     for FRAGMENT in "$FRAGMENT_DIR"/*.config; do
         [ -s "$FRAGMENT" ] || continue
@@ -108,7 +108,7 @@ for f in dtbo.img dtb.img; do
 done
 
 DATE_TAG=$(date +%Y%m%d-%H%M)
-ZIP_NAME="zincore-${DEVICE}-${VARIANT}-${DATE_TAG}.zip"
+ZIP_NAME="snowflake-${DEVICE}-${VARIANT}-${DATE_TAG}.zip"
 
 pushd "$AK3_DIR" >/dev/null
 zip -r9 "${WORKDIR}/${ZIP_NAME}" . -x ".git/*" -x "*.zip"
