@@ -174,7 +174,7 @@ jobs:
         if: failure()
         working-directory: kernel_src
         run: |
-          find . -path ./.zincore_deps -prune -o -name '*.rej' -print0 > ../rejects.list
+          find . -path ./.snowflake_deps -prune -o -name '*.rej' -print0 > ../rejects.list
           if [ -s ../rejects.list ]; then
             tar -czf ../patch-rejects.tar.gz --null -T ../rejects.list
           fi
@@ -183,7 +183,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
-          name: zincore-${{ matrix.device }}-${{ matrix.variant }}-rejects
+          name: snowflake-${{ matrix.device }}-${{ matrix.variant }}-rejects
           path: patch-rejects.tar.gz
           if-no-files-found: ignore
 
@@ -206,8 +206,8 @@ jobs:
       - name: Upload flashable zip
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
-          name: zincore-${{ matrix.device }}-${{ matrix.variant }}
-          path: kernel_src/zincore-*.zip
+          name: snowflake-${{ matrix.device }}-${{ matrix.variant }}
+          path: kernel_src/snowflake-*.zip
           if-no-files-found: error
 
       - name: Upload debug artifacts
@@ -224,7 +224,7 @@ jobs:
         if: matrix.variant == 'ksu'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
-          name: zincore-${{ matrix.device }}-${{ matrix.variant }}-versions
+          name: snowflake-${{ matrix.device }}-${{ matrix.variant }}-versions
           path: |
             kernel_src/${{ matrix.device }}-bakasu-version.txt
             kernel_src/${{ matrix.device }}-susfs-version.txt
@@ -241,7 +241,7 @@ jobs:
       - name: Download all build artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
-          pattern: zincore-*
+          pattern: snowflake-*
           path: release_files
 
       - name: Flatten artifact folders
@@ -285,7 +285,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           DATE=$(date +'%Y-%m-%d')
-          gh release create "zincore-${DATE}-${{ github.run_id }}" \
+          gh release create "snowflake-${DATE}-${{ github.run_id }}" \
             --repo "${{ github.repository }}" \
             --title "Build - ${DATE}" \
             --notes-file release_notes.md \
