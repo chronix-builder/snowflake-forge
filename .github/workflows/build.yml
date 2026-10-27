@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ""
+      branch:
+        description: "Kernel branch to build. Leave EMPTY to use the device's default branch."
+        required: false
+        type: string
+        default: ""
       create_release:
         description: "Create a GitHub Release after build"
         required: true
@@ -91,14 +96,36 @@ jobs:
 
       - name: Read device config
         id: devcfg
+        env:
+          DEVICE: ${{ matrix.device }}
+          BRANCH_INPUT: ${{ inputs.branch }}
         run: |
-          DEVICE_JSON="builder/devices/${{ matrix.device }}.json"
+          set -euo pipefail
+          DEVICE_JSON="builder/devices/${DEVICE}.json"
+          if [ ! -f "$DEVICE_JSON" ]; then
+            echo "::error::Device config not found: $DEVICE_JSON"
+            exit 1
+          fi
+
+          jq_field() { jq -r --arg d "$DEVICE" --arg f "$1" '.[$d][$f] // empty' "$DEVICE_JSON"; }
+
+          kernel_repo=$(jq_field kernel_repo)
+          kernel_branch="${BRANCH_INPUT:-$(jq_field kernel_branch)}"
+          clang_version=$(jq_field clang_version)
+          kernel_version=$(jq_field kernel_version)
+
+          if [ -z "$kernel_repo" ] || [ -z "$kernel_branch" ] || [ -z "$clang_version" ] || [ -z "$kernel_version" ]; then
+            echo "::error::Incomplete config in $DEVICE_JSON — kernel_repo, kernel_branch, clang_version and kernel_version are all required."
+            exit 1
+          fi
+
           {
-            echo "kernel_repo=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_repo' "$DEVICE_JSON")"
-            echo "kernel_branch=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_branch' "$DEVICE_JSON")"
-            echo "clang_version=$(jq -r '.["'"${{ matrix.device }}"'"].clang_version' "$DEVICE_JSON")"
-            echo "kernel_version=$(jq -r '.["'"${{ matrix.device }}"'"].kernel_version' "$DEVICE_JSON")"
+            echo "kernel_repo=$kernel_repo"
+            echo "kernel_branch=$kernel_branch"
+            echo "clang_version=$clang_version"
+            echo "kernel_version=$kernel_version"
           } >> "$GITHUB_OUTPUT"
+          echo "→ Building kernel_branch=$kernel_branch"
 
       - name: Clone kernel source
         run: |
