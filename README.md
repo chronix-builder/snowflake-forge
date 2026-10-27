@@ -1,27 +1,34 @@
 <div align="center">
 
-# Zincore Forge
+# Snowflake-Revived
 
-[![Release](https://img.shields.io/github/release-date/yureixen/zincore-forge?label=Release&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
-[![Downloads](https://img.shields.io/github/downloads/yureixen/zincore-forge/total?label=Downloads&labelColor=1f2328&color=6e56cf)](https://github.com/yureixen/zincore-forge/releases)
-[![License](https://img.shields.io/github/license/yureixen/zincore-forge?label=License&labelColor=1f2328&color=6e56cf)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-Channel-6e56cf?labelColor=1f2328)](https://t.me/deadenddrops)
+[![Release](https://img.shields.io/github/release-date/chronix-builder/snowflake-forge?label=Release&labelColor=1f2328&color=6e56cf)](https://github.com/chronix-builder/snowflake-forge/releases)
+[![Downloads](https://img.shields.io/github/downloads/chronix-builder/snowflake-forge/total?label=Downloads&labelColor=1f2328&color=6e56cf)](https://github.com/chronix-builder/snowflake-forge/releases)
+[![License](https://img.shields.io/github/license/chronix-builder/snowflake-forge?label=License&labelColor=1f2328&color=6e56cf)](LICENSE)
 
 </div>
 
-GitHub Actions builder for non-GKI kernels. It compiles the source maintained by teams like LineageOS and PixelOS with a pinned AOSP Clang toolchain, keeping close to their own configuration so the kernel remains as stable and predictable as they made it.
+GitHub Actions builder for **Snowflake-Revived**, the non-GKI kernel for the Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) maintained by [Chronix](https://github.com/chronix-builder). It compiles [kernel_xiaomi_sm6150](https://github.com/chronix-builder/kernel_xiaomi_sm6150) with a pinned AOSP Clang toolchain, keeping close to the source tree's own configuration so the kernel stays as stable and predictable as it was made.
 
 ## Approach
 
 Built for those who want the stability of a stock kernel but still want root when they need it. The `ksu` build adds BakaSU and SuSFS on top, and nothing else, while the `nsu` build is the vanilla kernel.
 
+## Building
+
+Trigger it from **Actions → Build Kernel → Run workflow**:
+
+| Input | Meaning |
+| :--- | :--- |
+| `device` | Device to build. Leave empty to build every supported device (violet). |
+| `branch` | Kernel branch to build. Leave empty to use the device default (`snowflake`), or pass e.g. `lineage-24.0` / `dev` to build another branch of the kernel source. |
+| `create_release` | Publish a GitHub Release from the build artifacts. Scheduled runs always release. |
+
 ## Compatibility
 
 | Supported devices | Kernel version | Supported Android versions |
 | :--- | :---: | :---: |
-| Xiaomi Redmi 7/Y3 ([onclite](https://www.gsmarena.com/xiaomi_redmi_7-9498.php)) | 4.9 | Android 13 – 17 |
 | Xiaomi Redmi Note 7 Pro ([violet](https://www.gsmarena.com/xiaomi_redmi_note_7_pro-9521.php)) | 4.14 | Android 13 – 17 |
-| Xiaomi Redmi Note 10 Pro/Pro Max ([sweet](https://www.gsmarena.com/xiaomi_redmi_note_10_pro-10662.php)) | 4.14 | Android 13 – 17 |
 
 ## Installation
 
@@ -50,12 +57,11 @@ New builds are released on the **1st of every month**. Each release rebuilds eve
 
 ## Credits
 
+- **[zincore-forge](https://github.com/yureixen/zincore-forge) by [yureixen](https://github.com/yureixen)** — the original builder this project is based on. Huge thanks for the base; all credit for the workflow and scripts design goes to them.
 - [Baka-SU](https://github.com/Baka-SU) for KernelSU on non-GKI kernels.
-- [Hadad](https://codeberg.org/hadad) for kernel source.
 - [JackA1ltman](https://github.com/JackA1ltman) for KernelSU hook script and SuSFS patches.
 - [LineageOS](https://github.com/LineageOS) for kernel source.
 - [osm0sis](https://github.com/osm0sis/AnyKernel3) for AnyKernel3.
-- [PixelOS-Devices](https://github.com/PixelOS-Devices) for kernel source.
 - [riarumoda](https://github.com/riarumoda/perf_neon-builder) for the inspiration.
 - [simonpunk](https://gitlab.com/simonpunk/susfs4ksu) for SuSFS.
 - [tiann](https://github.com/tiann/KernelSU) for the original KernelSU.
