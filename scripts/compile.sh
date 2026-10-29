@@ -54,6 +54,16 @@ fi
 # Resolve dependencies after all fragment toggles
 make O="$OUT_DIR" ARCH="$KERNEL_ARCH" $LLVM_TOOLS olddefconfig
 
+# A ksu build without a live CONFIG_KSU/SuSFS is a broken build — the kernel
+# would flash and boot with no root at all, so fail here instead of packaging it.
+if [ "$VARIANT" = "ksu" ]; then
+    for OPT in CONFIG_KSU CONFIG_KSU_MANUAL_HOOK CONFIG_KSU_SUSFS CONFIG_KSU_SUSFS_SUS_MAP; do
+        grep -q "^${OPT}=y" "${OUT_DIR}/.config" \
+            || die "${OPT} is not enabled in the final .config — KernelSU-Next/SuSFS config fragment did not take (olddefconfig dropped it). Check drivers/kernelsu/Kconfig and snowflake_fragments/."
+    done
+    log "KernelSU-Next + SuSFS config verified in out/.config"
+fi
+
 # Save final .config as a debug artifact
 cp "${OUT_DIR}/.config" "${WORKDIR}/${DEVICE}-${VARIANT}-config"
 
@@ -87,10 +97,27 @@ fi
 log "Kernel image: $IMAGE_PATH"
 
 if [ "$VARIANT" = "ksu" ]; then
-    grep -oE "(BakaSU|ReSukiSU) version name: [^ ]+" "$BUILD_LOG" | head -1 | sed -E 's/^[A-Za-z]+ version name: //' > "${WORKDIR}/${DEVICE}-bakasu-version.txt" || true
-    grep -oE "Supported (Unofficial )?Managers?: .*" "$BUILD_LOG" | head -1 | sed -E 's/^Supported (Unofficial )?Managers?: //; s/ +$//' > "${WORKDIR}/${DEVICE}-bakasu-managers.txt" || true
-    [ -s "${WORKDIR}/${DEVICE}-bakasu-version.txt" ] || die "KSU build finished but no BakaSU version string was found in $BUILD_LOG, the version grep may be out of date"
-    [ -s "${WORKDIR}/${DEVICE}-bakasu-managers.txt" ] || die "KSU build finished but no supported manager list was found in $BUILD_LOG, the grep may be out of date"
+    # KernelSU-Next prints its tag/version from the driver's Kbuild.
+    # grep -o emits "KernelSU-Next tag: <tag>" (3 fields), no leading "--".
+    KSUN_TAG=$(grep -m1 -oE 'KernelSU-Next tag: [^ ]+' "$BUILD_LOG" | awk '{print $3}' || true)
+    KSUN_VER=$(grep -m1 -oE 'KernelSU-Next version: [0-9]+' "$BUILD_LOG" | awk '{print $3}' || true)
+
+    [ -n "$KSUN_TAG" ] || die "KSU build finished but no 'KernelSU-Next tag:' line was found in $BUILD_LOG — the driver's Kbuild did not run (drivers/kernelsu wiring broken?)"
+    [ -n "$KSUN_VER" ] || warn "no 'KernelSU-Next version:' line in $BUILD_LOG — reporting the tag only"
+
+    if [ -n "$KSUN_VER" ]; then
+        echo "KernelSU-Next ${KSUN_TAG} (driver ${KSUN_VER})" > "${WORKDIR}/${DEVICE}-ksun-version.txt"
+    else
+        echo "KernelSU-Next ${KSUN_TAG}" > "${WORKDIR}/${DEVICE}-ksun-version.txt"
+    fi
+
+    # SuSFS version Kbuild read out of the patched include/linux/susfs.h
+    grep -m1 -oE 'SUSFS_VERSION: [^ ]+' "$BUILD_LOG" | awk '{print $2}' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
+    [ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "KSU build finished but no 'SUSFS_VERSION:' line was found in $BUILD_LOG — SuSFS was not integrated into this build (expected '-- SUSFS_VERSION: ...' from the driver Kbuild)"
+
+    # Only the official KernelSU-Next manager signature is baked into the driver.
+    KSUN_MGR=$(grep -m1 -oE 'KernelSU-Next Manager package name: .*' "$BUILD_LOG" | sed 's/^.*package name: //' || true)
+    echo "${KSUN_MGR:-KernelSU-Next Manager (official release)}" > "${WORKDIR}/${DEVICE}-ksun-managers.txt"
 fi
 
 cp "$IMAGE_PATH" "$AK3_DIR/"

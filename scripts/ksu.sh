@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# scripts/ksu.sh — integrate KernelSU-Next (non-GKI "legacy" line, SuSFS built
+# in) and the SuSFS kernel-side patches into the kernel source tree.
+#
+# Steps, in order:
+#   1. clone KernelSU-Next, pinned (no setup.sh — upstream setup.sh hardcodes
+#      the KernelSU-Next/KernelSU-Next repo, we need sidex15's legacy-susfs-v2)
+#   2. hook the driver into drivers/{Makefile,Kconfig}, exactly like
+#      kernel/setup.sh does (symlink drivers/kernelsu -> <clone>/kernel)
+#   3. apply the SuSFS 4.14 kernel patch (fs/, include/, kernel/)
+#   4. apply the SuSFS inline hook patches (wire ksu_handle_* into the kernel)
+#   5. write the config fragment that compile.sh merges into out/.config
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
@@ -9,42 +21,68 @@ DEVICE_JSON="devices/${DEVICE}.json"
 
 : "${KSU_REPO_URL:?KSU_REPO_URL not set — source config.env first}"
 : "${KSU_REPO_PIN:?KSU_REPO_PIN not set — source config.env first}"
+: "${KSU_REPO_TAG:?KSU_REPO_TAG not set — source config.env first}"
 : "${SUSFS_REPO_URL:?SUSFS_REPO_URL not set — source config.env first}"
 : "${SUSFS_REPO_PIN:?SUSFS_REPO_PIN not set — source config.env first}"
 
 KERNEL_VERSION=$(read_field kernel_version)
 [ -n "$KERNEL_VERSION" ] || die "kernel_version missing in $DEVICE_JSON"
 
-# Clone + pin dependencies BEFORE executing anything from them
 WORKDIR="$(pwd)"
-KSU_SRC="${WORKDIR}/.snowflake_deps/bakasu"
+KSU_SRC="${WORKDIR}/.snowflake_deps/KernelSU-Next"
 SUSFS_SRC="${WORKDIR}/.snowflake_deps/susfs"
+DRIVER_DIR="${WORKDIR}/drivers"
+DRIVER_MAKEFILE="${DRIVER_DIR}/Makefile"
+DRIVER_KCONFIG="${DRIVER_DIR}/Kconfig"
+
+[ -d "$DRIVER_DIR" ] || die "no drivers/ directory in $(pwd) — run from the kernel source root"
+[ -f "$DRIVER_MAKEFILE" ] && [ -f "$DRIVER_KCONFIG" ] || die "drivers/Makefile or drivers/Kconfig missing"
+
+# ---------------------------------------------------------------- 1. sources
 mkdir -p "$(dirname "$KSU_SRC")"
+rm -rf "$KSU_SRC"
 
-log "Cloning BakaSU (pinned to ${KSU_REPO_PIN})"
-git init --quiet "$KSU_SRC"
-git -C "$KSU_SRC" remote add origin "$KSU_REPO_URL"
-git -C "$KSU_SRC" fetch --quiet --depth 1 origin "$KSU_REPO_PIN"
-git -C "$KSU_SRC" checkout --quiet FETCH_HEAD
+# Not shallow: kernel/Kbuild derives the reported driver version and tag from
+# `git rev-list --count` / `git describe --tags` in this clone, and a shallow
+# clone reports a bogus count and no tag. Blobless keeps it small while leaving
+# full commit/tag history in place (and no .git/shallow, so Kbuild never tries
+# to `git fetch --unshallow` mid-build).
+log "Cloning KernelSU-Next (non-GKI + SuSFS, pin ${KSU_REPO_TAG})"
+git clone --filter=blob:none --no-checkout "$KSU_REPO_URL" "$KSU_SRC"
+git -C "$KSU_SRC" checkout --quiet "$KSU_REPO_PIN"
 
-log "Cloning SuSFS source (JackA1ltman, pinned to ${SUSFS_REPO_PIN})"
+KSU_HEAD=$(git -C "$KSU_SRC" rev-parse HEAD)
+[ "$KSU_HEAD" = "$KSU_REPO_PIN" ] || die "KernelSU-Next is at $KSU_HEAD, not the pinned $KSU_REPO_PIN"
+
+log "Cloning SuSFS source (pinned to ${SUSFS_REPO_PIN})"
+rm -rf "$SUSFS_SRC"
 git init --quiet "$SUSFS_SRC"
 git -C "$SUSFS_SRC" remote add origin "$SUSFS_REPO_URL"
 git -C "$SUSFS_SRC" fetch --quiet --depth 1 origin "$SUSFS_REPO_PIN"
 git -C "$SUSFS_SRC" checkout --quiet FETCH_HEAD
 
+# -------------------------------------------------- 2. hook driver into build
+# Same three edits as KernelSU-Next's kernel/setup.sh, but pointed at our pin.
+rm -rf "${DRIVER_DIR}/kernelsu"
+ln -sfn "$(realpath --relative-to="$DRIVER_DIR" "${KSU_SRC}/kernel")" "${DRIVER_DIR}/kernelsu"
+log "drivers/kernelsu -> $(readlink "${DRIVER_DIR}/kernelsu")"
+
+grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> "$DRIVER_MAKEFILE"
+grep -q 'source "drivers/kernelsu/Kconfig"' "$DRIVER_KCONFIG" \
+    || sed -i '0,/endmenu/s//source "drivers\/kernelsu\/Kconfig"\nendmenu/' "$DRIVER_KCONFIG"
+
+grep -q "kernelsu" "$DRIVER_MAKEFILE" || die "failed to hook drivers/Makefile"
+grep -q 'source "drivers/kernelsu/Kconfig"' "$DRIVER_KCONFIG" || die "failed to hook drivers/Kconfig"
+
+[ -f "${DRIVER_DIR}/kernelsu/Kconfig" ] || die "drivers/kernelsu/Kconfig not reachable through the symlink"
+grep -q "config KSU_SUSFS" "${DRIVER_DIR}/kernelsu/Kconfig" \
+    || die "pinned KernelSU-Next (${KSU_REPO_TAG}) does not carry SuSFS in kernel/Kconfig — wrong version for a SuSFS build, check KSU_REPO_TAG/KSU_REPO_PIN in config.env"
+
+# ------------------------------------------------- 3. SuSFS kernel-side patch
 FRAGMENT_DIR="snowflake_fragments"
 FRAGMENT_FILE="${FRAGMENT_DIR}/kernelsu.config"
 mkdir -p "$FRAGMENT_DIR"
 : > "$FRAGMENT_FILE"
-
-log "Installing BakaSU (pinned to ${KSU_REPO_PIN})"
-bash "${KSU_SRC}/kernel/setup.sh" "$KSU_REPO_PIN"
-
-# setup.sh silently falls back to the default branch if checkout fails; make sure the pin was really used
-[ "$(git -C KernelSU rev-parse HEAD)" = "$KSU_REPO_PIN" ] || die "BakaSU is not at the pinned commit ${KSU_REPO_PIN}, setup.sh checkout probably failed"
-
-log "Applying SuSFS patch for kernel $KERNEL_VERSION"
 
 if grep -q "CONFIG_KSU_SUSFS" "fs/namespace.c" 2>/dev/null; then
     log "SuSFS already patched in this tree, skipping patch step"
@@ -55,7 +93,7 @@ else
         die "$SUSFS_PATCH_FILE not found in pinned SuSFS source — check that susfs_patch_to_${KERNEL_VERSION}.patch exists at this pinned commit."
     fi
 
-    log "Applying SuSFS patch"
+    log "Applying SuSFS kernel patch for kernel $KERNEL_VERSION"
     set +e
     patch -p1 --fuzz=3 < "$SUSFS_PATCH_FILE"
     PATCH_RC=$?
@@ -63,7 +101,7 @@ else
     if [ "$PATCH_RC" -gt 1 ]; then
         die "patch exited with code $PATCH_RC — not a hunk rejection but a fatal patch error (malformed patch, unreadable target file). Check $SUSFS_PATCH_FILE."
     fi
-    
+
     # A reject is ignored only if it is whitespace-only
     ws_only() {
         awk '
@@ -94,56 +132,95 @@ else
     log "SuSFS patch applied cleanly (no real rejects)"
 fi
 
-# Manual hook script
-log "Applying SuSFS manual hook patches"
-HOOK_LOG="${WORKDIR}/${DEVICE}-susfs-hook.log"
-bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee "$HOOK_LOG"
-grep -o "Current susfs patch version:[0-9.]*" "$HOOK_LOG" | head -1 | sed 's/Current susfs patch version://' > "${WORKDIR}/${DEVICE}-susfs-version.txt" || true
-[ -s "${WORKDIR}/${DEVICE}-susfs-version.txt" ] || die "SuSFS hook script ran but no patch version was found in $HOOK_LOG, the version grep may be out of date"
+[ -f "fs/susfs.c" ] || die "fs/susfs.c missing after the SuSFS patch step"
+[ -f "include/linux/susfs.h" ] || die "include/linux/susfs.h missing after the SuSFS patch step"
 
-# Core config fragment (structural — merged into out/.config by compile.sh)
-log "Patching static symbol exports required by BakaSU"
-
-UNSTATIC_APPLIED=0
-UNSTATIC_TOTAL=0
-
-unstatic() {
-    local file="$1" regex="$2"
-    UNSTATIC_TOTAL=$((UNSTATIC_TOTAL + 1))
-
-    if [ ! -f "$file" ]; then
-        warn "unstatic: $file not found in this tree — skipping '$regex' (expected if this kernel's source layout differs)"
-        return
-    fi
-
-    if grep -q "static $regex" "$file" 2>/dev/null; then
-        sed -i "s/static $regex/$regex/" "$file"
-        log "  exported: $regex ($file)"
-        UNSTATIC_APPLIED=$((UNSTATIC_APPLIED + 1))
-    else
-        warn "  not found as 'static $regex' in $file — already non-static, or this kernel tree's SELinux code differs from what this pattern expects"
-    fi
-}
-unstatic "security/selinux/selinuxfs.c" "ssize_t (\*write_op\[\])"
-unstatic "security/selinux/selinuxfs.c" "const struct file_operations sel_handle_status_ops"
-unstatic "security/selinux/selinuxfs.c" "DEFINE_MUTEX(sel_mutex);"
-unstatic "security/selinux/ss/services.c" "struct page \*selinux_status_page;"
-unstatic "security/selinux/ss/services.c" "DEFINE_MUTEX(selinux_status_lock);"
-unstatic "security/selinux/ss/services.c" "DEFINE_RWLOCK(policy_rwlock);"
-unstatic "security/selinux/hooks.c" "struct security_operations selinux_ops"
-unstatic "security/selinux/ss/services.c" "void security_dump_masked_av("
-unstatic "security/selinux/ss/services.c" "void context_struct_compute_av("
-
-log "Static-symbol export summary: ${UNSTATIC_APPLIED}/${UNSTATIC_TOTAL} applied"
-if [ "$UNSTATIC_APPLIED" -lt "$UNSTATIC_TOTAL" ]; then
-    warn "$((UNSTATIC_TOTAL - UNSTATIC_APPLIED)) pattern(s) above were NOT applied — this is expected if they're already non-static in this tree, but if this is a NEW kernel source (different repo/version than previously verified), manually confirm BakaSU actually has the symbol access it needs before trusting this build."
+# -------------------------------------------------- 4. SuSFS inline hooks
+# Wires ksu_handle_* (KernelSU-Next's non-kprobe entry points) and the SuSFS
+# call sites into fs/, kernel/ and security/. Without this the kernel compiles
+# but SuSFS/KSU have nothing to hook on a 4.14 kernel with CONFIG_KPROBES=n.
+if grep -q "ksu_handle_execveat" "fs/exec.c" 2>/dev/null; then
+    log "SuSFS inline hooks already present, skipping hook step"
+else
+    log "Applying SuSFS inline hook patches"
+    HOOK_LOG="${WORKDIR}/${DEVICE}-susfs-hook.log"
+    bash "${SUSFS_SRC}/Patches/susfs_inline_hook_patches.sh" | tee "$HOOK_LOG"
 fi
 
+# The SuSFS version file is written later by compile.sh, out of the driver
+# Kbuild's `-- SUSFS_VERSION:` line — that proves both the kernel-side patch and
+# the KernelSU-Next driver saw SuSFS, which a script echo would not.
+
+# --------------------------------------------- KernelSU-Next ABI reconciliation
+# susfs_inline_hook_patches.sh also targets other non-GKI KernelSU forks, so
+# four of its injections do not exist in KernelSU-Next's driver:
+#   * ksu_is_init_rc_hook_enabled / ksu_is_input_hook_enabled — foreign static
+#     keys; the driver exports its own gates: ksu_init_rc_hook, ksu_input_hook.
+#   * ksu_handle_vfs_fstat, ksu_handle_post_execveat_sucompat — helpers the
+#     driver simply does not have (su-compat runs before exec only).
+# Re-point the two gates at the driver's flags and drop the two calls, keeping
+# every hook that KernelSU-Next does export. Inputs are pinned in config.env,
+# and the assertions below fail the build if any of it drifts.
+log "Reconciling inline hooks with the KernelSU-Next driver ABI"
+
+# fs/read_write.c — keep the init_rc read proxy, gate it on the driver's flag
+sed -i 's|^extern struct static_key_true ksu_is_init_rc_hook_enabled;$|extern bool ksu_init_rc_hook;|' fs/read_write.c
+sed -i 's|static_branch_unlikely(&ksu_is_init_rc_hook_enabled)|ksu_init_rc_hook|' fs/read_write.c
+
+# fs/stat.c — no vfs_fstat size-spoof helper in KernelSU-Next, drop the call
+sed -i '/^extern struct static_key_true ksu_is_init_rc_hook_enabled;$/d' fs/stat.c
+sed -i '/^extern void ksu_handle_vfs_fstat(int fd, loff_t \*kstat_size_ptr);$/d' fs/stat.c
+sed -i '/if (static_branch_unlikely(&ksu_is_init_rc_hook_enabled))/,+1d' fs/stat.c
+
+# drivers/input/input.c — keep the volume-key input hook, gate it on the driver's flag
+sed -i 's|^extern struct static_key_true ksu_is_input_hook_enabled;$|extern bool ksu_input_hook;|' drivers/input/input.c
+sed -i 's|static_branch_unlikely(&ksu_is_input_hook_enabled)|ksu_input_hook|' drivers/input/input.c
+
+# fs/exec.c — no post-exec sucompat hook; the pre-exec hook already handles su
+sed -i 's|(void)ksu_handle_post_execveat_sucompat(.*|(void)0; /* KernelSU-Next: no post-exec sucompat hook, the pre-exec hook handles su */|' fs/exec.c
+sed -i '/^extern int ksu_handle_post_execveat_sucompat(/,+1d' fs/exec.c
+
+# Nothing foreign may survive, and the hooks that matter must still be there.
+FOREIGN=$(grep -rn --include='*.c' --include='*.h' \
+    -e 'ksu_is_init_rc_hook_enabled' -e 'ksu_is_input_hook_enabled' \
+    -e 'ksu_handle_vfs_fstat' -e 'ksu_handle_post_execveat_sucompat' \
+    fs drivers kernel security mm include 2>/dev/null || true)
+[ -z "$FOREIGN" ] || die "KernelSU-Next ABI reconciliation incomplete, still referenced:
+${FOREIGN}"
+grep -q 'ksu_init_rc_hook' fs/read_write.c        || die "init_rc read hook was lost during ABI reconciliation"
+grep -q 'ksu_input_hook' drivers/input/input.c    || die "input hook was lost during ABI reconciliation"
+log "Inline hooks now match the KernelSU-Next driver ABI"
+
+# Verify the hooks actually landed — a silently skipped hook means a kernel
+# that boots with a dead SuSFS.
+HOOK_CHECK=0
+grep -q "ksu_handle_execveat" fs/exec.c            || { warn "missing ksu_handle_execveat hook in fs/exec.c"; HOOK_CHECK=1; }
+grep -q "ksu_handle_faccessat" fs/open.c           || { warn "missing ksu_handle_faccessat hook in fs/open.c"; HOOK_CHECK=1; }
+grep -q "ksu_handle_sys_read" fs/read_write.c      || { warn "missing ksu_handle_sys_read hook in fs/read_write.c"; HOOK_CHECK=1; }
+grep -q "ksu_handle_stat" fs/stat.c                || { warn "missing ksu_handle_stat hook in fs/stat.c"; HOOK_CHECK=1; }
+grep -q "ksu_handle_sys_reboot" kernel/reboot.c    || { warn "missing ksu_handle_sys_reboot hook in kernel/reboot.c"; HOOK_CHECK=1; }
+[ "$HOOK_CHECK" -eq 0 ] || die "SuSFS/KernelSU-Next inline hooks incomplete — see warnings above"
+log "SuSFS inline hooks verified"
+
+# ------------------------------------------------------- 5. config fragment
+log "Writing KernelSU-Next + SuSFS config fragment"
+
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU"
+# KernelSU-Next's own Kconfig says the kprobe/tracepoint hook "should not be
+# used on kernel below 5.10", and the syscall-table hook needs >= 4.17 — so on
+# this 4.14 kernel we force the manual (in-source) hook mode.
+fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_MANUAL_HOOK"
+
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SUS_PATH"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SUS_MOUNT"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SUS_KSTAT"
+# SuSFS's try_umount needs kernel-side helpers (susfs_try_umount,
+# susfs_add_try_umount) that no 4.14 kernel patch set provides for this driver,
+# so with it on the kernel fails to link. The driver falls back to its own
+# ksu_handle_umount() when this is off, so mount hiding still works — off by
+# design, not an oversight.
+fragment_add "$FRAGMENT_FILE" "-d CONFIG_KSU_SUSFS_TRY_UMOUNT"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SPOOF_UNAME"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_ENABLE_LOG"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS"
@@ -151,8 +228,8 @@ fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_OPEN_REDIRECT"
 fragment_add "$FRAGMENT_FILE" "-e CONFIG_KSU_SUSFS_SUS_MAP"
 
-# THREAD_INFO_IN_TASK is conditionally required
-if grep -q "THREAD_INFO_IN_TASK" "drivers/kernelsu/Kconfig" 2>/dev/null; then
+# CONFIG_KSU_SUSFS depends on THREAD_INFO_IN_TASK
+if grep -q "THREAD_INFO_IN_TASK" "${DRIVER_DIR}/kernelsu/Kconfig" 2>/dev/null; then
     fragment_add "$FRAGMENT_FILE" "-e CONFIG_THREAD_INFO_IN_TASK"
     log "THREAD_INFO_IN_TASK required by this KernelSU Kconfig, added"
 fi
