@@ -5,7 +5,7 @@
     "defconfig": "vendor/snowy_defconfig",
     "kernel_version": "4.14",
     "arch": "arm64",
-    "kernel_name": "snowflake-revived",
+    "kernel_name": "Snowy",
 
     "clang_version": "r563880c",
     "clang_branch": "android16-qpr2-release",
